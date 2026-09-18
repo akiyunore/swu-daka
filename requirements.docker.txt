@@ -1,0 +1,4 @@
+-r checkin-web/backend/requirements.txt
+requests==2.34.2
+playwright==1.55.0
+ddddocr==1.6.1

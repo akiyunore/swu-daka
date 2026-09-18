@@ -1,0 +1,67 @@
+services:
+  swu-daka:
+    image: ${SWU_DAKA_IMAGE:-akiyunore/swu-daka:2026-09-18.2}
+    container_name: swu-daka
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18080:8000"
+    environment:
+      TZ: Asia/Shanghai
+      CHECKIN_WEB_ENV: production
+      CHECKIN_WEB_ADMIN_USERNAME: admin
+      CHECKIN_WEB_ADMIN_PAGE_PATH: "${SWU_DAKA_ADMIN_PAGE_PATH:?Run the preparation script to create private route settings}"
+      CHECKIN_WEB_ADMIN_API_PREFIX: "${SWU_DAKA_ADMIN_API_PREFIX:?Run the preparation script to create private route settings}"
+      CHECKIN_WEB_ADMIN_PASSWORD_FILE: /run/secrets/admin_password
+      CHECKIN_WEB_CREDENTIAL_KEY_FILE: /run/secrets/credential_key
+      CHECKIN_WEB_SECURE_COOKIES: "true"
+      CHECKIN_WEB_ALLOWED_HOSTS: "${SWU_DAKA_ALLOWED_HOSTS:?Set your public hostname and loopback hosts in the private .env file}"
+      CHECKIN_WEB_MAX_CONCURRENT_RUNS: "${SWU_DAKA_MAX_CONCURRENT_RUNS:-1}"
+      CHECKIN_WEB_API_THREAD_LIMIT: "${SWU_DAKA_API_THREAD_LIMIT:-8}"
+      CHECKIN_WEB_MAX_REQUEST_BODY_BYTES: "${SWU_DAKA_MAX_REQUEST_BODY_BYTES:-65536}"
+      CHECKIN_WEB_CLI_TIMEOUT_SECONDS: "270"
+      CHECKIN_WEB_SCHEDULE_JITTER_SECONDS: "600"
+      CHECKIN_WEB_CLOUD_OCR_ALLOWED_HOSTS: "${SWU_DAKA_CLOUD_OCR_ALLOWED_HOSTS:-api.xiaomimimo.com}"
+      CHECKIN_WEB_EMAIL_NOTIFICATIONS_ENABLED: "false"
+      SWU_CHROME_STARTUP_TIMEOUT_SECONDS: "45"
+      SWU_LOGIN_FLOW_TIMEOUT_SECONDS: "180"
+      SWU_IDM_HTTP_LOGIN: "1"
+      SWU_IDM_HTTP_TIMEOUT_SECONDS: "20"
+      MIMO_API_KEY_FILE: /run/secrets/mimo_api_key
+      MIMO_API_URL: https://api.xiaomimimo.com/v1/chat/completions
+      MIMO_MODEL: mimo-v2.5
+      MIMO_API_TIMEOUT_SECONDS: "20"
+      MIMO_OCR_MAX_CALLS_PER_LOGIN: "2"
+    secrets:
+      - admin_password
+      - credential_key
+      - mimo_api_key
+    volumes:
+      - ./docker-data:/data
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    shm_size: "1gb"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 512
+    mem_limit: ${SWU_DAKA_MEMORY_LIMIT:-1536m}
+    mem_reservation: ${SWU_DAKA_MEMORY_RESERVATION:-1g}
+    memswap_limit: ${SWU_DAKA_MEMORY_SWAP_LIMIT:-2g}
+    cpus: ${SWU_DAKA_CPU_LIMIT:-2.0}
+    stop_grace_period: 300s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+secrets:
+  admin_password:
+    file: ./secrets/admin_password.txt
+  credential_key:
+    file: ./secrets/credential_key.txt
+  mimo_api_key:
+    file: ./secrets/mimo_api_key.txt

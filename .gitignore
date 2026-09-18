@@ -1,0 +1,37 @@
+# Private deployment configuration and runtime data
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+secrets/
+docker-data/
+docker-backups/
+*.db
+*.db-wal
+*.db-shm
+*.log
+*.jsonl
+*.key
+*.pem
+*.p12
+*.pfx
+token.txt
+checkin_cache.json
+
+# Build and test artifacts
+__pycache__/
+*.py[cod]
+.venv/
+.uv-cache/
+.pytest_cache/
+.test-tmp-*/
+node_modules/
+dist/
+build/
+*.tar
+*.tar.gz
+*.zip
+
+# Host-specific proxy and backup files
+nginx-private.conf
+*.bak
