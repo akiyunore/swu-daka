@@ -119,14 +119,28 @@ docker compose logs --tail=100 swu-daka
 ```sh
 docker compose stop swu-daka
 backup_dir="../swu-daka-backups/$(date +%Y%m%d-%H%M%S)"
-install -d -m 0700 "$backup_dir"
-cp -a docker-data secrets .env docker-compose.yml "$backup_dir/"
-test -f "$backup_dir/docker-data/app.db"
-test -f "$backup_dir/secrets/credential_key.txt"
+sudo install -d -m 0700 "$backup_dir"
+sudo cp -a docker-data secrets .env docker-compose.yml "$backup_dir/"
+sudo test -f "$backup_dir/docker-data/app.db"
+sudo test -f "$backup_dir/secrets/credential_key.txt"
 docker compose up -d --no-build
 ```
 
-核对备份大小、文件数量和 SQLite 完整性，再把备份安全地移到另一处。不要将备份目录放进 Git 或公开云盘。
+`docker-data/` 对普通部署账号不可读时，上述复制必须使用 `sudo`。核对备份大小、文件数量和 SQLite 完整性，再把备份安全地移到另一处。可用 Python 自带的 SQLite 模块检查备份数据库：
+
+```sh
+sudo python3 - "$backup_dir/docker-data/app.db" <<'PY'
+import sqlite3
+import sys
+from pathlib import Path
+
+connection = sqlite3.connect(Path(sys.argv[1]).resolve().as_uri() + "?mode=ro", uri=True)
+print(connection.execute("PRAGMA integrity_check").fetchone()[0])
+connection.close()
+PY
+```
+
+结果应为 `ok`。不要将备份目录放进 Git 或公开云盘。
 
 ## 8. 升级与回退
 
